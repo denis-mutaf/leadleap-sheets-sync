@@ -41,16 +41,6 @@ function yesterdayUtcDateStr() {
   return `${y}-${mo}-${day}`;
 }
 
-function nextRunAt3Utc() {
-  const now = Date.now();
-  const next = new Date();
-  next.setUTCHours(3, 0, 0, 0);
-  if (next.getTime() <= now) {
-    next.setUTCDate(next.getUTCDate() + 1);
-  }
-  return next;
-}
-
 function aggregateCampaigns(insights, matchSubstring, resultAction, addToCartAction) {
   const needle = matchSubstring.toLowerCase();
   let impressions = 0;
@@ -181,17 +171,14 @@ if (dateArg && /^\d{4}-\d{2}-\d{2}$/.test(dateArg)) {
       process.exit(1);
     });
 } else {
-  const next = nextRunAt3Utc();
-  console.log(
-    `Sheets sync service started, next run at ${next.toISOString()} (03:00 UTC daily)`
-  );
+  console.log('Sheets sync service started, runs daily at 06:00 Europe/Chisinau');
 
   cron.schedule(
-    '0 3 * * *',
+    '0 6 * * *',
     async () => {
       const y = yesterdayUtcDateStr();
       await syncDay(y);
     },
-    { timezone: 'UTC' }
+    { timezone: 'Europe/Chisinau' }
   );
 }
