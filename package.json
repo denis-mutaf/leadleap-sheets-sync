@@ -1,0 +1,18 @@
+{
+  "name": "leadleap-sheets-sync",
+  "version": "1.0.0",
+  "description": "Sync Meta Ads insights to Google Sheets on a schedule",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "googleapis": "^144.0.0",
+    "node-cron": "^3.0.3"
+  }
+}
