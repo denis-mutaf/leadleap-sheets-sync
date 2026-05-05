@@ -6,6 +6,7 @@ import { fetchDailyInsights } from './meta-fetcher.js';
 import { calculateMetrics } from './metrics.js';
 import { scanSheet } from './sheet-scanner.js';
 import { writeBlockData, updateTotals } from './sheets-writer.js';
+import { syncAdsets } from './adsets-tracker.js';
 
 const MONTHS_EN = [
   'JANUARY',
@@ -41,15 +42,18 @@ function yesterdayUtcDateStr() {
   return `${y}-${mo}-${day}`;
 }
 
-function aggregateCampaigns(insights, matchSubstring, resultAction, addToCartAction) {
+function aggregateCampaigns(insights, matchSubstring, resultAction, addToCartAction, exclude) {
   const needle = matchSubstring.toLowerCase();
+  const excludeNeedles = (exclude || []).map(e => e.toLowerCase());
   let impressions = 0;
   let clicks = 0;
   let leads = 0;
   let spend = 0;
   let addToCart = 0;
   for (const row of insights) {
-    if (!row.campaignName.toLowerCase().includes(needle)) continue;
+    const nameLower = row.campaignName.toLowerCase();
+    if (!nameLower.includes(needle)) continue;
+    if (excludeNeedles.some(ex => nameLower.includes(ex))) continue;
     console.log(`[agg-match] needle="${needle}" matched: ${row.campaignName}`);
     impressions += row.impressions;
     clicks += row.clicks;
@@ -113,7 +117,8 @@ async function syncDay(dateStr) {
           insights,
           mapping.match,
           mapping.resultAction,
-          mapping.addToCartAction
+          mapping.addToCartAction,
+          mapping.exclude
         );
         const metrics = calculateMetrics(
           agg.impressions,
@@ -181,4 +186,25 @@ if (dateArg && /^\d{4}-\d{2}-\d{2}$/.test(dateArg)) {
     },
     { timezone: 'Europe/Chisinau' }
   );
+
+  cron.schedule(
+    '*/30 * * * *',
+    async () => {
+      try {
+        await syncAdsets();
+      } catch (err) {
+        console.error('[adsets] cron sync failed:', err);
+      }
+    },
+    { timezone: 'Europe/Chisinau' }
+  );
+}
+
+if (process.argv[2] === 'adsets') {
+  syncAdsets()
+    .then(() => process.exit(0))
+    .catch((e) => {
+      console.error(e);
+      process.exit(1);
+    });
 }

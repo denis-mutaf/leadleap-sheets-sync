@@ -29,6 +29,13 @@ export const projects = [
         block: 'PURCHASE',
         resultAction: 'offsite_conversion.fb_pixel_purchase',
         addToCartAction: 'offsite_conversion.fb_pixel_add_to_cart',
+        exclude: ['purchase showroom'],
+      },
+      {
+        match: 'purchase showroom',
+        block: 'PURCHASE SHOWROOM',
+        resultAction: 'offsite_conversion.fb_pixel_purchase',
+        addToCartAction: 'offsite_conversion.fb_pixel_add_to_cart',
       },
     ],
   },

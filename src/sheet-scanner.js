@@ -153,7 +153,7 @@ export async function scanSheet(sheets, spreadsheetId, sheetName) {
       if (!blockName) continue;
 
       const headerRow = rows[headerRowIndex] || [];
-      const columns = findHeaderColumns(headerRow, c);
+      const columns = findHeaderColumns(headerRow, labelCols.length > 1 ? c : 0);
       if (!columns) continue;
 
       const dataStartRowIndex = headerRowIndex + 1;
