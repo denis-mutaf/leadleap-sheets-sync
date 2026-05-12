@@ -103,20 +103,28 @@ export async function syncAdsets() {
     raw.map((a) => ({ name: a.name, status: a.effective_status }))
   );
 
-  const nameFilter = /^\d{2,6}\s*(\/|\|)/;
-  const byName = new Map();
+  const nameFilter = /^\d{1,6}\s*(\/|\|)/;
+  const byKey = new Map();
   for (const a of raw) {
     if (!nameFilter.test(a.name)) continue;
+    const m = a.name.match(/^(\d{1,6})/);
+    if (!m) continue;
+    const key = m[1];
     const isActive = String(a.effective_status ?? '').toUpperCase() === 'ACTIVE';
-    const prev = byName.get(a.name);
+    const prev = byKey.get(key);
     if (!prev) {
-      byName.set(a.name, { name: a.name, hasActive: isActive });
+      byKey.set(key, {
+        firstName: a.name,
+        firstActiveName: isActive ? a.name : null,
+        hasActive: isActive,
+      });
     } else if (isActive) {
       prev.hasActive = true;
+      if (prev.firstActiveName == null) prev.firstActiveName = a.name;
     }
   }
-  const rows = [...byName.values()].map((g) => [
-    g.name,
+  const rows = [...byKey.values()].map((g) => [
+    g.hasActive ? g.firstActiveName : g.firstName,
     toDisplayStatus(g.hasActive ? 'ACTIVE' : 'PAUSED'),
   ]);
   const sorted = sortAdsetRows(rows);
